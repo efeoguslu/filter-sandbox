@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-#define FIR_FILTER_LENGTH (29)
+#define FIR_FILTER_LENGTH (39)
+#define MOVING_RMS_MAX_BUF (2048)
 
 typedef struct{
     float alpha;
@@ -37,6 +38,25 @@ typedef struct{
 void FIRFilter_Init(FIRFilter *fir);
 float FIRFilter_Update(FIRFilter *fir, float inp);
 
+// -------------------------------------------------------------------------------------------------------------------------
+
+typedef struct{
+    // Window length
+    uint16_t L;
+
+    // 1 divided by window length
+    float invL;
+
+    // Circular Buffer
+    uint16_t count;
+    float in_sq_L[MOVING_RMS_MAX_BUF];
+
+    // RMS estimate squared
+    float out_sq;
+}MovingRMS;
+
+void MovingRMS_Init(MovingRMS *mrms, uint16_t L);
+float MovingRMS_Update(MovingRMS *mrms, float in);
 
 
 

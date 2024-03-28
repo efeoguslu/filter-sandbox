@@ -51,6 +51,57 @@ float IFX_EMA_Update(IFX_EMA *filt, float in){
 
 //-----------------------------------------------------------------------------------------------
 
+
+// cutoff freq: 12
+// transition bandwidth: 6
+// window type: hamming
+
+
+static float FIR_IMPULSE_RESPONSE[FIR_FILTER_LENGTH] = {
+0.000333853857448447f,
+-0.00104609626230262f,
+-0.00193297660067591f,
+-0.00099355127692384f,
+0.002211318039028508f,
+0.005192399426243866f,
+0.003407568696318785f,
+-0.004546772395009404f,
+-0.012354273975931732f,
+-0.009407970992883001f,
+0.007537578639226952f,
+0.025560691018175354f,
+0.022598172731741546f,
+-0.010460981569823067f,
+-0.051642602293181204f,
+-0.055458993359458156f,
+0.012581588402430482f,
+0.140648759020065295f,
+0.267509851850688374f,
+0.320524874089642586f,
+0.267509851850688374f,
+0.140648759020065295f,
+0.012581588402430486f,
+-0.055458993359458177f,
+-0.051642602293181204f,
+-0.010460981569823067f,
+0.022598172731741542f,
+0.025560691018175357f,
+0.007537578639226955f,
+-0.009407970992883001f,
+-0.012354273975931739f,
+-0.004546772395009408f,
+0.003407568696318787f,
+0.005192399426243865f,
+0.002211318039028506f,
+-0.000993551276923849f,
+-0.001932976600675912f,
+-0.001046096262302623f,
+0.000333853857448447f,
+}; 
+
+
+
+/*
 static float FIR_IMPULSE_RESPONSE[FIR_FILTER_LENGTH] = {
 -0.000227117658700331f,
 -0.001196416074915810f,
@@ -82,6 +133,8 @@ static float FIR_IMPULSE_RESPONSE[FIR_FILTER_LENGTH] = {
 -0.001196416074915811f,
 -0.000227117658700331f,
 }; 
+*/
+
 
                                                             
 
@@ -140,4 +193,45 @@ float FIRFilter_Update(FIRFilter *fir, float inp){
     // Return filtered output
 
     return fir->out;
+}
+
+//-----------------------------------------------------------------------------------------------
+
+
+void MovingRMS_Init(MovingRMS *mrms, uint16_t L){
+    mrms->L = L;
+    mrms->invL = (1.0f / ((float)L));
+    mrms->count = 0;
+
+    // clear circular buffer
+    for(uint16_t n = 0; n < L; n++){
+        mrms->in_sq_L[n] = 0.0f;
+    }
+
+    // clear output
+    mrms->out_sq = 0.0f;
+}
+
+float MovingRMS_Update(MovingRMS *mrms, float in){
+
+    // compute input-squared
+    float in_sq = in*in;
+
+    // store value in circular buffer (for use in M samples)
+    mrms->in_sq_L[mrms->count] = in_sq;
+
+    // update circular buffer pointer
+    if(mrms->count == (mrms->L - 1)){
+        // reached end of circular buffer, move back to start
+        mrms->count = 0;
+    }else{
+        mrms->count++;
+    }
+
+    // compute latest output squared using recursive equation
+    mrms->out_sq = mrms->out_sq + mrms->invL * (in_sq - mrms->in_sq_L[mrms->count]);
+
+    // return square of RMS
+
+    return mrms->out_sq;
 }

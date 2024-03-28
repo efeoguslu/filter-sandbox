@@ -32,6 +32,7 @@ int main(){
 
     float iirFilterOutput{ 0.0f };
     float firFilterOutput{ 0.0f };
+    float std_dev{ 0.0f };
 
     queue q1, q2;
     
@@ -41,6 +42,7 @@ int main(){
 
     std::ifstream rotatedAzLogFile("rotatedAzLogFile.txt");
     std::ofstream extractedAzLogFile("extractedAzLogFile.txt");
+    
 
     // Extract Data
 
@@ -53,6 +55,8 @@ int main(){
     std::ofstream iirFilterLogFile("iirFilter.txt");
     std::ofstream firFilterLogFile("firFilter.txt");
 
+    std::ofstream stdDevLogFile("standardDeviation.txt");
+
     // Apply filters and bump detection
     for (float value : sensorData) {
 
@@ -63,6 +67,7 @@ int main(){
         // Write filtered values to output files
         iirFilterLogFile << filteredValue1 << std::endl;
         firFilterLogFile << filteredValue2 << std::endl;
+        stdDevLogFile << calculate_std_dev(&q2, calculate_mean(&q2)) << std::endl;
 
         // Use the filtered value for bump detection
         enqueue(&q1, filteredValue1); // or filteredValue2, filteredValue3, depending on which filter's output you want to use
@@ -78,7 +83,7 @@ int main(){
         enqueue(&q2, filteredValue2);
 
         if(q2.bump_detected){
-            std::cout << "Bump detected at sample " << q2.samples_processed << " with FIR filtering, Count: " << q2.bump_counter << std::endl;
+            std::cout << "Bump detected at sample " << q2.samples_processed << " Sec: " << float(q2.samples_processed) / 75 << " with FIR filtering, Count: " << q2.bump_counter << std::endl;
             q2.bump_detected = false;
         }
 

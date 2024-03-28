@@ -6,7 +6,7 @@ bool combinedToleranceCompare(double x, double y) {
     return std::fabs(x - y) <= std::numeric_limits<double>::epsilon() * maxXYOne;
 }
 
-constexpr float range_threshold{ 0.35f };
+constexpr float range_threshold{ 0.30f };
 constexpr int warm_up_samples{ 30 };
 
 void init_queue(queue* q, int max_size){
@@ -61,6 +61,11 @@ void apply_bump_detection(queue* q){
         return; // Skip the rest of the function if we're in cooldown
     }
 
+    float mean = calculate_mean(q);
+    float std_dev = calculate_std_dev(q, mean);
+
+    float dynamic_threshold = range_threshold + std_dev * 0.15f;
+
     float max_value = q->values[0];
     float min_value = q->values[0];
 
@@ -79,7 +84,7 @@ void apply_bump_detection(queue* q){
     }
 
     float new_range = max_value - min_value;
-
+    
     if(!combinedToleranceCompare(new_range, q->previous_range)){
 
         if(new_max_index != q->max_index && new_min_index != q->min_index){
@@ -87,7 +92,7 @@ void apply_bump_detection(queue* q){
         q->max_index = new_max_index;
         q->min_index = new_min_index;
 
-            if(std::abs(q->values[q->max_index] - q->values[q->min_index]) > range_threshold){
+            if(std::abs(q->values[q->max_index] - q->values[q->min_index]) > dynamic_threshold){
                 q->bump_counter++;
                 q->bump_detected = true;
 
