@@ -119,8 +119,11 @@ void extractSensorData(std::ifstream& inputFile, std::ofstream& outputFile) {
 }
 
 // Function to create the .plt file
-bool createPlotScript(const std::string& directoryPath) {
-    std::string plotScript = R"(
+bool createPlotScript(const std::string& directoryPath, const std::vector<int>& verticalLineIndices) {
+    std::stringstream plotScript;
+
+    // Add Gnuplot script header
+    plotScript << R"(
         # Set plot title and axis labels
         set title "Sensor Data Plot"
         set xlabel "Sample Index"
@@ -133,11 +136,15 @@ bool createPlotScript(const std::string& directoryPath) {
         # set yrange [0:2]
 
         # Plot data from file as a line graph
-        plot "rotatedAzLogFile.txt" using 0:2 with lines title "rotatedAzLogFile", \
-            "iirFilterLogFile.txt" using 0:2 with lines title "iirFilterOutput", \
-            "firFilterLogFile.txt" using 0:2 with lines title "firFilterOutput", \
-            "standartDeviationLogFile.txt" using 0:2 with lines title "standartDeviationLogFile"
-        )";
+        plot "extractedAzLogFile.txt" with lines title "rotatedAzLogFile", \
+             "iirFilter.txt" with lines title "iirFilterOutput", \
+             "firFilter.txt" with lines title "firFilterOutput"
+    )";
+
+    // Add commands for vertical lines using arrows
+    for (int index : verticalLineIndices) {
+        plotScript << "\nset arrow from " << index << ", graph 0 to " << index << ", graph 1 nohead lc rgb 'red' lw 1";
+    }
 
     std::string plotScriptPath = directoryPath + "plot.plt";
     std::ofstream plotScriptFile(plotScriptPath);
@@ -147,7 +154,7 @@ bool createPlotScript(const std::string& directoryPath) {
         return false;
     }
 
-    plotScriptFile << plotScript;
+    plotScriptFile << plotScript.str();
     plotScriptFile.close();
 
     return true;

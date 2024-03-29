@@ -5,15 +5,15 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <sys/ioctl.h>
-//#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
 #include <time.h>
-/*
+
 extern "C" {
 	#include <linux/i2c-dev.h>
 	#include <i2c/smbus.h>
 }
-*/
+
 
 #include <cmath>
 #include <thread>
@@ -38,7 +38,7 @@ void logAngles(std::ofstream &logfile, float roll, float pitch);
 
 
 void extractSensorData(std::ifstream& inputFile, std::ofstream& outputFile);
-bool createPlotScript(const std::string& directoryPath);
+bool createPlotScript(const std::string& directoryPath, const std::vector<int>& verticalLineIndices);
 
 
 

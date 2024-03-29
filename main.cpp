@@ -5,7 +5,7 @@
 FirstOrderIIR iirFilter;
 FIRFilter firFilter;
 
-float filterAlpha{ 0.5f };
+float filterAlpha{ 0.95f };
 
 std::vector<float> readSensorData(const std::string& filePath) {
     std::vector<float> sensorData;
@@ -57,6 +57,10 @@ int main(){
 
     std::ofstream stdDevLogFile("standardDeviation.txt");
 
+    std::vector<int> verticalLineIndices;
+
+    auto directoryPath = "/home/efeoguslu/Desktop/filterSandbox/";
+
     // Apply filters and bump detection
     for (float value : sensorData) {
 
@@ -84,11 +88,16 @@ int main(){
 
         if(q2.bump_detected){
             std::cout << "Bump detected at sample " << q2.samples_processed << " Sec: " << float(q2.samples_processed) / 75 << " with FIR filtering, Count: " << q2.bump_counter << std::endl;
+            // Add the sample index to the vector
+            verticalLineIndices.push_back(q2.samples_processed);
             q2.bump_detected = false;
         }
 
 
     }
+
+    // Create plot script with vertical lines
+    createPlotScript(directoryPath, verticalLineIndices);
 
     // Output results
     std::cout << "Bumps detected with IIR filtering: " << q1.bump_counter << std::endl;
