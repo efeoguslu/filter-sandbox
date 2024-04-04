@@ -138,7 +138,8 @@ bool createPlotScript(const std::string& directoryPath, const std::vector<int>& 
         # Plot data from file as a line graph
         plot "extractedAzLogFile.txt" with lines title "rotatedAzLogFile", \
              "iirFilter.txt" with lines title "iirFilterOutput", \
-             "firFilter.txt" with lines title "firFilterOutput"
+             "firFilter.txt" with lines title "firFilterOutput", \
+             "lowThresholdLogFile.txt" with lines title "lowThres"
     )";
 
     // Add commands for vertical lines using arrows
